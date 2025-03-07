@@ -50,7 +50,7 @@ or manage artifacts of the SPDK CI repository, shall be placed in `.github/actio
 
 ## Locally testing actions
 
-install see <https://nektosact.com/installation>
+Install: see <https://nektosact.com/installation>
 
 or use [GitHub CLI](https://cli.github.com/)
 

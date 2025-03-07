@@ -23,7 +23,7 @@ doc: |
   * Convert the image (with compression)
     - qemu-img convert boot.img /tmp/fedora-41-x86_64.qcow2 -O qcow2 -c
 
-  * Upload it to publically available storage
+  * Upload it to publicly available storage
 
 steps:
 - name: diskimage_from_cloudimage

@@ -75,7 +75,7 @@ jobs:
 
         # TODO: either use an official lcov image or create our own
         # TODO: get rid of pandas dependency in spdk/autorun_post.py.
-        #       It's ~1GB with all it's dependecies, which is an overkill for
+        #       It's ~1GB with all it's dependencies, which is an overkill for
         #       a few table operations.
         sudo apt-get update && sudo apt-get install -y lcov python3-pandas
 

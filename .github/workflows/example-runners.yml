@@ -46,7 +46,7 @@ jobs:
   contenerized_autorun:
     # This job can run on any type of runner, requires docker to be present.
     # Nested virtualization has to be supported.
-    # Container image has all depedencies to start a VM and steer the test execution.
+    # Container image has all dependencies to start a VM and steer the test execution.
     # Meanwhile the VM has an image prepared to execute autorun.sh.
     if: ${{ inputs.contenerized_autorun }}
     # Note lack of runs-on here. We are calling a workflow, rather than just creating a job.
@@ -55,7 +55,7 @@ jobs:
     uses: ./.github/workflows/spdk-common-tests.yml
 
   bare_autorun:
-    # This job can run on any type of runner, requires the enviroment to be
+    # This job can run on any type of runner, requires the environment to be
     # already prepared from pkgdep.sh and autotest_setup.sh.
     runs-on: example_runner
     if: ${{ inputs.bare_autorun }}
