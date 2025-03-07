@@ -41,3 +41,9 @@ repos:
   hooks:
   - id: mypy
     name: Python-lint-mypy
+
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.2.4
+  hooks:
+  - id: codespell
+    name: codespell
