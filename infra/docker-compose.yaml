@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./builds:/var/www/builds
+    ports:
+      - "80:80"
+      - "443:443"
+
+  artifact_manager:
+    image: artifact_manager
+    build:
+      context: ./artifact_manager
+      dockerfile: Dockerfile
+    container_name: artifact_manager
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REPO_OWNER=${REPO_OWNER}
+      - REPO_NAME=${REPO_NAME}
+      - CHECK_INTERVAL=60
+    volumes:
+      - ./builds:/builds
