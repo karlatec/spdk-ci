@@ -155,16 +155,6 @@ jobs:
         - nvmf-tcp-uring-vm-autotest
         - iscsi-vm-autotest
         - iscsi-uring-vm-autotest
-        - unittest-gcc-container-autotest
-        - unittest-clang-container-autotest
-        - unittest-valgrind-container-autotest
-        - check-format-container-autotest
-        - release-build-gcc-container-autotest
-        - release-build-clang-container-autotest
-        - doc-container-autotest
-        - build-files-container-autotest
-        - scan-build-container-autotest
-        - check-so-deps-container-autotest
         - short-fuzz-phy-autotest
         include:
         - nvme_setup: "zns"
@@ -275,3 +265,106 @@ jobs:
           ci/cijoe/report_${{ matrix.workflow }}_cleanup
           ci/cijoe/report_${{ matrix.workflow }}_prep_guest
         name: common-cijoe-${{ matrix.workflow }}
+
+  autorun-container:
+    runs-on: ubuntu-latest
+    needs:
+    - checkout_spdk
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        workflow:
+        - check-format-container-autotest
+        - unittest-gcc-container-autotest
+        - unittest-clang-container-autotest
+        - unittest-valgrind-container-autotest
+        - release-build-gcc-container-autotest
+        - release-build-clang-container-autotest
+        - doc-container-autotest
+        - build-files-container-autotest
+        - scan-build-container-autotest
+        - check-so-deps-container-autotest
+    container:
+      image: ghcr.io/spdk/spdk-ci:fedora_40
+      options: --device=/dev/kvm --privileged
+      volumes:
+      - /dev/hugepages:/dev/hugepages
+      - /usr/share:/host-usr-share
+      - /usr/local:/host-usr-local
+    env:
+      REPOSITORY_TARBALL_PATH: ${{ github.workspace }}/spdk.tar.gz
+      ABI_TARBALL_PATH: ${{ github.workspace }}/spdk-abi.tar.gz
+      CI_CFGS_REPOSITORY_PATH: ${{ github.workspace }}/ci/cijoe/configs/autorun_configs
+      CI_WORKFLOWS_REPOSITORY_PATH: ${{ github.workspace }}/ci/cijoe/workflows
+    steps:
+    # cijoe - for running cijoe workflows instead of writing own manual scrits;
+    #         TODO: Installation doesn't take long but we should bake it into the container image.
+    - run: |
+        pip install cijoe==0.9.54
+
+    - name: Download the SPDK repository
+      uses: actions/download-artifact@v4.1.8
+      with:
+        name: repo-spdk
+
+    - name: Download the SPDK ABI repository
+      uses: actions/download-artifact@v4.1.8
+      with:
+        name: repo-spdk-abi
+
+    - name: Checkout CI repository
+      uses: actions/checkout@v4.1.7
+      with:
+        path: ci
+
+    # TODO: Not possible to use spdk/scripts/setup.sh - uio_pci_generic, vfio-pci and other are
+    # not available in the container, making setup.sh fail. Need to add an option to setup.sh
+    # which would skip driver detection and loading, and just set up the hugepages.
+    - name: Setup hugepages
+      run: |
+        echo 4096 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+
+    # ghcr.io/spdk/spdk-ci:fedora_40 is about ~10GB in size, leaving us with not much space
+    # for tests after pulling the image. Reclaim some by removing features not used in SPDK tests
+    # See: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
+    # Run this ONLY on self-hosted runners and make sure it's not a local GH ACT runner (these
+    # identify themselves as "github-hosted" runners!)
+    - name: Cleanup runner
+      if: ${{ contains(runner.environment, 'github-hosted') }}
+      run: |
+        [[ $GITHUB_ACTOR == "nektos/act" || ACT == "true" ]] && exit 0
+        rm -rf /host-usr-share/dotnet \
+          /host-usr-local/lib/android \
+          /host-usr-local/share/edge_driver \
+          /host-usr-local/share/gecko_driver \
+          /host-usr-local/java/selenium-server.jar \
+          /host-usr-local/share/chromedriver-linux64 \
+          /host-usr-local/kotlin
+
+    - name: container ${{ matrix.workflow }} prepare
+      run: |
+        cijoe $CI_WORKFLOWS_REPOSITORY_PATH/autorun_in_container.yaml tgz_unpack ci_configs_copy \
+        --config $CI_CFGS_REPOSITORY_PATH/../container-fedora_40.toml \
+        --output report_${{ matrix.workflow }} \
+        --monitor
+
+    - name: container ${{ matrix.workflow }} run
+      run: |
+        cijoe $CI_WORKFLOWS_REPOSITORY_PATH/autorun_in_container.yaml ${{ matrix.workflow }} \
+        --config $CI_CFGS_REPOSITORY_PATH/../container-fedora_40.toml \
+        --output report_${{ matrix.workflow }} \
+        --monitor
+
+    - name: container ${{ matrix.workflow }} cleanup
+      run: |
+        cijoe $CI_WORKFLOWS_REPOSITORY_PATH/autorun_in_container.yaml output_listing retrieve_autorun_output \
+        --config $CI_CFGS_REPOSITORY_PATH/../container-fedora_40.toml \
+        --output report_${{ matrix.workflow }} \
+        --monitor
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4.4.0
+      if: always()
+      with:
+        path: ${{ github.workspace }}/autorun_output
+        name: common-job-${{ matrix.workflow }}

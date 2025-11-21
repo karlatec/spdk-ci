@@ -1,0 +1,79 @@
+---
+doc: |
+  Create qemu guest, transfer SPDK .tgz source and invoke autorun
+
+  * Create qemu guest, and start it, using a system_image
+  * Transfer and unpack SPDK source to/in qemu guest
+  * Create auto.conf for testing (unittest + nvme)
+  * Invoke autorun.sh
+  * Retrieve autorun output
+  * Shut down qemu guest
+
+steps:
+- name: tgz_unpack
+  run: |
+    mkdir -p /opt/{spdk,spdk-abi}
+    tar xzf "{{ local.env.REPOSITORY_TARBALL_PATH }}" -C /opt/spdk
+    tar xzf "{{ local.env.ABI_TARBALL_PATH }}" -C /opt/spdk-abi
+    git config --global --add safe.directory '*'
+
+- name: output_create
+  run: |
+    mkdir -p "{{ local.env.GITHUB_WORKSPACE }}/autorun_output"
+
+- name: ci_configs_copy
+  uses: core.put
+  with:
+    src: "{{ local.env.CI_CFGS_REPOSITORY_PATH }}"
+    dst: /opt/configs
+
+- name: unittest-gcc-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/unittest-gcc-container-autotest.conf && ocf_precompile && unittest_build && TEST_MIN_STORAGE_SIZE=250000000 ./test/unit/unittest.sh
+
+- name: unittest-clang-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && export CC=/usr/bin/clang CXX=/usr/bin/clang++ && source ./test/common/autobuild_common.sh /opt/configs/unittest-clang-container-autotest.conf && ocf_precompile && unittest_build && TEST_MIN_STORAGE_SIZE=250000000 ./test/unit/unittest.sh
+
+- name: unittest-valgrind-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/unittest-valgrind-container-autotest.conf && ocf_precompile && unittest_build && TEST_MIN_STORAGE_SIZE=250000000 ./test/unit/unittest.sh
+
+- name: check-format-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/check-format-container-autotest.conf && check_format
+
+- name: release-build-gcc-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/release-build-gcc-container-autotest.conf && build_release
+
+- name: release-build-clang-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && export CC=/usr/bin/clang CXX=/usr/bin/clang++ && source ./test/common/autobuild_common.sh /opt/configs/release-build-clang-container-autotest.conf && build_release
+
+- name: doc-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/empty.conf && build_doc
+
+- name: build-files-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/empty.conf && build_files && dpdk_pci_api
+
+- name: scan-build-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/scan-build-container-autotest.conf && ocf_precompile && scanbuild_make
+
+- name: check-so-deps-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/check-so-deps-container-autotest.conf && ocf_precompile && SPDK_ABI_DIR=/opt/spdk-abi check_so_deps
+
+- name: output_listing
+  run: |
+    ls -la /opt
+    ls -la /opt/output
+
+- name: retrieve_autorun_output
+  uses: core.get
+  with:
+    src: /opt/output
+    dst: "{{ local.env.GITHUB_WORKSPACE }}/autorun_output"
