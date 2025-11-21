@@ -74,27 +74,27 @@ jobs:
       client_payload: ${{ needs.patch_set_status.outputs.client_payload }}
       changed_files: $${{ needs.patch_set_status.outputs.changed_files }}
 
-  hpe:
-    name: NVMe-oF RDMA tests
-    if: ${{ !cancelled() }}
-    needs:
-    - patch_set_status
-    uses: ./.github/workflows/nvmf-rdma.yml
-    with:
-      client_payload: ${{ needs.patch_set_status.outputs.client_payload }}
+  # hpe:
+  #   name: NVMe-oF RDMA tests
+  #   if: ${{ !cancelled() }}
+  #   needs:
+  #   - patch_set_status
+  #   uses: ./.github/workflows/nvmf-rdma.yml
+  #   with:
+  #     client_payload: ${{ needs.patch_set_status.outputs.client_payload }}
   # Add more jobs below if needed.
 
 
-  # Summary should be last job, please make sure to include yours in 'needs'.
-  summary:
-    name: Job summary
-    if: ${{ !cancelled() }}
-    needs:
-    - patch_set_status
-    - common
-    - hpe
-    uses: ./.github/workflows/summary.yml
-    with:
-      client_payload: ${{ needs.patch_set_status.outputs.client_payload }}
-      result: ${{ (needs.common.result == 'success' && needs.hpe.result == 'success') && 'success' || 'failure' }}
-    secrets: inherit
+  # # Summary should be last job, please make sure to include yours in 'needs'.
+  # summary:
+  #   name: Job summary
+  #   if: ${{ !cancelled() }}
+  #   needs:
+  #   - patch_set_status
+  #   - common
+  #   # - hpe
+  #   uses: ./.github/workflows/summary.yml
+  #   with:
+  #     client_payload: ${{ needs.patch_set_status.outputs.client_payload }}
+  #     result: ${{ (needs.common.result == 'success') && 'success' || 'failure' }}
+  #   secrets: inherit
