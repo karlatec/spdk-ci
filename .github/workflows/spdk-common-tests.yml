@@ -284,6 +284,7 @@ jobs:
         - build-files-container-autotest
         - scan-build-container-autotest
         - check-so-deps-container-autotest
+        - vfio-user-container-autotest
     container:
       image: ghcr.io/spdk/spdk-ci:fedora_40
       options: --device=/dev/kvm --privileged
@@ -340,6 +341,14 @@ jobs:
           /host-usr-local/java/selenium-server.jar \
           /host-usr-local/share/chromedriver-linux64 \
           /host-usr-local/kotlin
+
+    - name: Restore qcow2 image from cache
+      if: contains(matrix.workflow, 'vfio')
+      id: restore-qcow2
+      uses: actions/cache/restore@v4
+      with:
+        path: fedora_40_x86_64.qcow2
+        key: vm-image-fedora_40_x86_64
 
     - name: container ${{ matrix.workflow }} prepare
       run: |
