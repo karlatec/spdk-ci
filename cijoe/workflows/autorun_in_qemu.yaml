@@ -26,6 +26,7 @@ steps:
   run: |
     hostname
     uname -a
+    dmidecode -t system || true
 
 - name: tgz_transfer
   uses: core.put
@@ -134,9 +135,13 @@ steps:
   run: |
     rootdir=/opt/spdk && cd $rootdir && source ./test/common/autobuild_common.sh /opt/configs/check-so-deps-container-autotest.conf && ocf_precompile && SPDK_ABI_DIR=/opt/spdk-abi check_so_deps
 
-- name: short-fuzz-phy-autotest
+- name: short-fuzz-vm-autotest
   run: |
     /opt/spdk/autorun.sh /opt/configs/short-fuzz-phy-autotest.conf
+
+- name: vfio-user-container-autotest
+  run: |
+    rootdir=/opt/spdk && cd $rootdir && ./configure --enable-debug --enable-werror --with-rdma --with-idxd --with-fio=/usr/src/fio --with-iscsi-initiator --disable-unit-tests --enable-coverage --with-ublk --with-vfio-user && make -j && VHOST_DIR="{{ local.env.GITHUB_WORKSPACE }}/vhost_test" VM_IMAGE="{{ local.env.GITHUB_WORKSPACE }}/fedora_40_x86_64.qcow2" $rootdir/test/vfio_user/vfio_user.sh
 
 - name: output_listing
   run: |
