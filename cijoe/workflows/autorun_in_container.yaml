@@ -1,13 +1,11 @@
 ---
 doc: |
-  Create qemu guest, transfer SPDK .tgz source and invoke autorun
+  Operates on localhost, unpacking SPDK .tgz source and invoking autorun.sh
 
-  * Create qemu guest, and start it, using a system_image
-  * Transfer and unpack SPDK source to/in qemu guest
-  * Create auto.conf for testing (unittest + nvme)
-  * Invoke autorun.sh
-  * Retrieve autorun output
-  * Shut down qemu guest
+  * Transfer and unpack SPDK sources
+  * Create autorun.conf files for running SPDK tests
+  * Start tests
+  * Retrieve test output
 
 steps:
 - name: tgz_unpack
