@@ -73,11 +73,11 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         set -x
-        fedora_40=$(gh api --paginate "/repos/${{ github.repository }}/actions/artifacts?name=vm-image-fedora_40_x86_64" -q '.artifacts |= sort_by(.updated_at)[-1] | .artifacts.workflow_run.id')
+        fedora_43=$(gh api --paginate "/repos/${{ github.repository }}/actions/artifacts?name=vm-image-fedora_43_x86_64" -q '.artifacts |= sort_by(.updated_at)[-1] | .artifacts.workflow_run.id')
         freebsd_14=$(gh api --paginate "/repos/${{ github.repository }}/actions/artifacts?name=vm-image-freebsd_14_x86_64" -q '.artifacts |= sort_by(.updated_at)[-1] | .artifacts.workflow_run.id')
-        [[ -z "${fedora_40}" ]] && echo "fedora_40 is empty" && exit 1
+        [[ -z "${fedora_43}" ]] && echo "fedora_43 is empty" && exit 1
         [[ -z "${freebsd_14}" ]] && echo "freebsd_14 is empty" && exit 1
-        echo "artifact_id={'fedora_40':$fedora_40,'freebsd_14':$freebsd_14}" >> "$GITHUB_OUTPUT"
+        echo "artifact_id={'fedora_43':$fedora_43,'freebsd_14':$freebsd_14}" >> "$GITHUB_OUTPUT"
     outputs:
       artifact_id: ${{ steps.get_artifact_id.outputs.artifact_id }}
 
@@ -152,6 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         workflow:
         - nvme-vm-autotest
@@ -174,10 +175,10 @@ jobs:
         - short-fuzz-phy-autotest
         include:
         - nvme_setup: "zns"
-        - distro: "fedora_40"
+        - distro: "fedora_43"
         - workflow: ftl-vm-autotest
           nvme_setup: "ftl"
-          distro: "fedora_40"
+          distro: "fedora_43"
         - workflow: freebsd-vm-autotest
           nvme_setup: "default"
           distro: "freebsd_14"
