@@ -48,7 +48,7 @@ steps:
     uname -a
     df -h
     growpart /dev/vda 4 || true
-    btrfs filesystem resize 10G / || true
+    btrfs filesystem resize max / || true
     df -h
 
 - name: guest_update
