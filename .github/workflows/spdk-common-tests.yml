@@ -171,6 +171,7 @@ jobs:
         - {name: iscsi-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
         - {name: iscsi-uring-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
         - {name: short-fuzz-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: vfio-user-container-autotest, container_image: ghcr.io/spdk/spdk-ci:fedora_40, cijoe_config_prefix: container}
         - {name: check-format-container-autotest, container_image: ghcr.io/spdk/spdk-ci:fedora_40, cijoe_config_prefix: container}
         - {name: unittest-gcc-container-autotest, container_image: ghcr.io/spdk/spdk-ci:fedora_40, cijoe_config_prefix: container}
         - {name: unittest-clang-container-autotest, container_image: ghcr.io/spdk/spdk-ci:fedora_40, cijoe_config_prefix: container}
