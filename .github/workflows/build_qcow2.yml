@@ -39,6 +39,7 @@ on:
         type: choice
         options:
         - fedora_43
+        - fedora_rawhide
         - freebsd_14
         default: 'fedora_43'
   push:
@@ -135,6 +136,20 @@ jobs:
         DISTRO: ${{ matrix.distro }}
       run: |
         cd ci/cijoe
+
+        # Get latest Fedora Rawhide cloud image URL and set it in the config file.
+        # Using sed is obviosly horrible and alternative approaches can be found in https://cijoe.readthedocs.io/en/latest/configs/index.html
+        # But...
+        # "Environment Variable Override" - "system-imaging" section contains a dash, and it's not possible to use dash in variable names.
+        # "Defining Multiple Configuration Files" - doesn't seem to work as expected. Using a second configuration file seems to override the first one,
+        #    instead of merging them, which results in a lot of variables not set.
+        if [ "$DISTRO" = "fedora_rawhide" ]; then
+          url="https://ftp.uni-stuttgart.de/fedora/development/rawhide/Cloud/x86_64/images"
+          image=$(curl -sLf $url | grep -oP 'href="Fedora.*Generic.*qcow2"' | cut -d "=" -f 2 | sort | sed 's/"//g' | tail -n1)
+          image_url="$url/$image"
+          sed -i "s|REPLACE|$image_url|" configs/qemuhost-with-guest-${{ matrix.distro }}.toml
+        fi
+
         cijoe \
         --monitor \
         --config configs/qemuhost-with-guest-${{ matrix.distro }}.toml \

@@ -44,6 +44,7 @@ on:
         type: choice
         options:
         - fedora_43
+        - fedora_rawhide
         - freebsd_14
         default: 'fedora_43'
 

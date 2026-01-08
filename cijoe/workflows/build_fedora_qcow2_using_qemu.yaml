@@ -51,42 +51,48 @@ steps:
     btrfs filesystem resize max / || true
     df -h
 
-- name: guest_update
-  run: |
-    dnf update -y
-    dnf install -y git perl-JSON-PP
-    dnf autoremove -y
-    dnf clean all -y
-
-- name: guest_info
-  uses: linux.sysinfo
-
-- name: tgz_transfer
-  uses: core.put
+- name: Test
+  uses: core.cmdrunner
   with:
-    src: "{{ local.env.REPOSITORY_TARBALL_PATH }}"
-    dst: /tmp/spdk.tar.gz
+    commands:
+    - export TESTVAR=XXX
+    - echo "VAR is $TESTVAR"
+# - name: guest_update
+#   run: |
+#     dnf update -y
+#     dnf install -y git perl-JSON-PP
+#     dnf autoremove -y
+#     dnf clean all -y
 
-- name: tgz_unpack
-  run: |
-    mkdir /tmp/spdk
-    tar xzf /tmp/spdk.tar.gz -C /tmp/spdk
-    rm /tmp/spdk.tar.gz
+# - name: guest_info
+#   uses: linux.sysinfo
 
-- name: guest_autotest_setup
-  run: |
-    /tmp/spdk/scripts/pkgdep.sh -a
-    mkdir /tmp/git_repos
-    /tmp/spdk/test/common/config/autotest_setup.sh --install-deps --upgrade --dir-git="/tmp/git_repos" --test-conf="lcov,flamegraph,fio,nvmecli,bpftrace,qemu,doxygen"
-    rm -r /tmp/git_repos
+# - name: tgz_transfer
+#   uses: core.put
+#   with:
+#     src: "{{ local.env.REPOSITORY_TARBALL_PATH }}"
+#     dst: /tmp/spdk.tar.gz
 
-- name: guest_shutdown
-  run: |
-    sync
-    systemctl poweroff
+# - name: tgz_unpack
+#   run: |
+#     mkdir /tmp/spdk
+#     tar xzf /tmp/spdk.tar.gz -C /tmp/spdk
+#     rm /tmp/spdk.tar.gz
 
-- name: guest_wait
-  uses: qemu.guest_wait_for_termination
-  with:
-    guest_name: generic-bios-kvm-x86_64
-    timeout: 60
+# - name: guest_autotest_setup
+#   run: |
+#     /tmp/spdk/scripts/pkgdep.sh -a
+#     mkdir /tmp/git_repos
+#     /tmp/spdk/test/common/config/autotest_setup.sh --install-deps --upgrade --dir-git="/tmp/git_repos" --test-conf="lcov,flamegraph,fio,nvmecli,bpftrace,qemu,doxygen"
+#     rm -r /tmp/git_repos
+
+# - name: guest_shutdown
+#   run: |
+#     sync
+#     systemctl poweroff
+
+# - name: guest_wait
+#   uses: qemu.guest_wait_for_termination
+#   with:
+#     guest_name: generic-bios-kvm-x86_64
+#     timeout: 60
