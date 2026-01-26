@@ -76,7 +76,7 @@ jobs:
 
   hpe:
     name: NVMe-oF RDMA tests
-    if: ${{ !cancelled() && github.repository == 'spdk/spdk-ci' }}
+    if: ${{ !cancelled() }}
     needs:
     - patch_set_status
     uses: ./.github/workflows/nvmf-rdma.yml
