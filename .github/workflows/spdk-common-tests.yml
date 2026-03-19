@@ -175,14 +175,14 @@ jobs:
     strategy:
       matrix:
         workflow:
-        - {name: nvme-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: raid-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: bdev-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: nvmf-tcp-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: nvmf-tcp-uring-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: iscsi-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: iscsi-uring-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
-        - {name: short-fuzz-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: nvme-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: raid-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: bdev-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: nvmf-tcp-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: nvmf-tcp-uring-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: iscsi-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: iscsi-uring-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
+        - {name: short-fuzz-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
         - {name: vfio-user-container-autotest, container_image: "ghcr.io/${{ github.repository }}:fedora_43", cijoe_config_prefix: container}
         - {name: check-format-container-autotest, container_image: "ghcr.io/${{ github.repository }}:fedora_43", cijoe_config_prefix: container}
         - {name: unittest-gcc-container-autotest, container_image: "ghcr.io/${{ github.repository }}:fedora_43", cijoe_config_prefix: container}
@@ -197,10 +197,10 @@ jobs:
         include:
         - distro: "fedora_43"
         - nvme_setup: "zns"
-        - workflow: {name: ftl-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
+        - workflow: {name: ftl-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
           nvme_setup: "ftl"
           distro: "fedora_43"
-        - workflow: {name: freebsd-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.54, cijoe_config_prefix: qemuhost-with-guest}
+        - workflow: {name: freebsd-vm-autotest, container_image: ghcr.io/refenv/cijoe-docker:v0.9.58, cijoe_config_prefix: qemuhost-with-guest}
           nvme_setup: "default"
           distro: "freebsd_14"
 
