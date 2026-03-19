@@ -227,7 +227,7 @@ jobs:
     - name: Install cijoe
       if: ${{ contains(matrix.workflow.name, 'container') }}
       run: |
-        pip install cijoe==0.9.54
+        pip install cijoe==0.9.58
 
     # ghcr.io/spdk/spdk-ci:fedora_43 is about ~10GB in size, leaving us with not much space
     # for tests after pulling the image. Reclaim some by removing features not used in SPDK tests
