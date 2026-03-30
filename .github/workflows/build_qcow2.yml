@@ -105,7 +105,7 @@ jobs:
       matrix:
         distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
     container:
-      image: ghcr.io/refenv/cijoe-docker:v0.9.54
+      image: ghcr.io/refenv/cijoe-docker:v0.9.58
       options: >
         --device=/dev/kvm
         --device=/dev/fuse
