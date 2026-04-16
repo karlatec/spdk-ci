@@ -46,7 +46,7 @@ jobs:
         EOF
         ./spdk/autorun.sh ./funtest.conf
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v7.0.0
+      uses: actions/upload-artifact@v7.0.1
       if: always()
       with:
         path: ./output
