@@ -63,7 +63,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ always() }}
-      uses: actions/upload-artifact@v7.0.0
+      uses: actions/upload-artifact@v7.0.1
       with:
         name: _autorun_summary
         path: _autorun_summary
