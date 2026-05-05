@@ -50,142 +50,152 @@ on:
 
 jobs:
   determine-distros:
+    # if: github.event_name != 'push' ||
+    #   (!contains(github.event.head_commit.message, 'dependabot[bot]') &&
+    #   !contains(github.event.head_commit.message, 'renovate[bot]'))
     runs-on: ubuntu-latest
     outputs:
       distro: ${{ steps.set-distro.outputs.distro }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-    - name: Get changed files
-      id: changed-files
-      uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v47.0.5
-    - name: Determine distros to build
-      id: set-distro
-      env:
-        CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        GH_EVENT_NAME: ${{ github.event_name }}
-        GH_INPUTS_DISTRO: ${{ inputs.distro }}
-      run: .github/scripts/build_qcow2_determine_distros.sh
+      - name: Print event details
+        env:
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_EVENT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          echo "GitHub Event Name: $GH_EVENT_NAME"
+          echo "GitHub Event Head Commit Message: $GH_EVENT_HEAD_COMMIT_MESSAGE"
+    # - name: Checkout repository
+    #   uses: actions/checkout@v6
+    #   with:
+    #     fetch-depth: 0
+    # - name: Get changed files
+    #   id: changed-files
+    #   uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v47.0.5
+    # - name: Determine distros to build
+    #   id: set-distro
+    #   env:
+    #     CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+    #     GH_EVENT_NAME: ${{ github.event_name }}
+    #     GH_INPUTS_DISTRO: ${{ inputs.distro }}
+    #   run: .github/scripts/build_qcow2_determine_distros.sh
 
-  source-archive:
-    needs: determine-distros
-    runs-on: ubuntu-latest
+  # source-archive:
+  #   needs: determine-distros
+  #   runs-on: ubuntu-latest
 
-    concurrency:
-      group: build_qcow2_source_archive
-      cancel-in-progress: false
+  #   concurrency:
+  #     group: build_qcow2_source_archive
+  #     cancel-in-progress: false
 
-    steps:
-    - name: Checkout the spdk-ci repo locally
-      uses: actions/checkout@v6
-    - name: Checkout SPDK repository via GitHUB
-      uses: ./.github/actions/checkout_gerrit
-      with:
-        gerrit_ref: ${{ github.event.inputs.gerrit_ref }}
-        spdk_path: spdk
+  #   steps:
+  #   - name: Checkout the spdk-ci repo locally
+  #     uses: actions/checkout@v6
+  #   - name: Checkout SPDK repository via GitHUB
+  #     uses: ./.github/actions/checkout_gerrit
+  #     with:
+  #       gerrit_ref: ${{ github.event.inputs.gerrit_ref }}
+  #       spdk_path: spdk
 
-    - name: Create a tarball, of the repository, to preserve file permissions
-      run: |
-        tar -C spdk -czf ./spdk.tar.gz .
+  #   - name: Create a tarball, of the repository, to preserve file permissions
+  #     run: |
+  #       tar -C spdk -czf ./spdk.tar.gz .
 
-    - name: Upload the repository as an artifact
-      uses: actions/upload-artifact@v7.0.0
-      with:
-        name: repo-spdk
-        path: spdk.tar.gz
+  #   - name: Upload the repository as an artifact
+  #     uses: actions/upload-artifact@v7.0.0
+  #     with:
+  #       name: repo-spdk
+  #       path: spdk.tar.gz
 
-  build-qcow2:
-    needs:
-    - determine-distros
-    - source-archive
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
-    container:
-      image: ghcr.io/refenv/cijoe-docker:v0.9.54
-      options: >
-        --device=/dev/kvm
-        --device=/dev/fuse
-        --cap-add=SYS_ADMIN
-        --security-opt apparmor=unconfined
+  # build-qcow2:
+  #   needs:
+  #   - determine-distros
+  #   - source-archive
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
+  #   container:
+  #     image: ghcr.io/refenv/cijoe-docker:v0.9.54
+  #     options: >
+  #       --device=/dev/kvm
+  #       --device=/dev/fuse
+  #       --cap-add=SYS_ADMIN
+  #       --security-opt apparmor=unconfined
 
-    env:
-      REPOSITORY_TARBALL_PATH: ${{ github.workspace }}/spdk.tar.gz
+  #   env:
+  #     REPOSITORY_TARBALL_PATH: ${{ github.workspace }}/spdk.tar.gz
 
-    concurrency:
-      group: ${{ format('build_{0}_qcow2', matrix.distro) }}
-      cancel-in-progress: false
+  #   concurrency:
+  #     group: ${{ format('build_{0}_qcow2', matrix.distro) }}
+  #     cancel-in-progress: false
 
-    steps:
-    - name: Download the repository
-      uses: actions/download-artifact@v8.0.1
-      with:
-        name: repo-spdk
+  #   steps:
+  #   - name: Download the repository
+  #     uses: actions/download-artifact@v8.0.1
+  #     with:
+  #       name: repo-spdk
 
-    - name: Checkout CI repository
-      uses: actions/checkout@v6
-      with:
-        path: ci
+  #   - name: Checkout CI repository
+  #     uses: actions/checkout@v6
+  #     with:
+  #       path: ci
 
-    - name: Build
-      env:
-        DISTRO: ${{ matrix.distro }}
-      run: |
-        cd ci/cijoe
-        cijoe \
-        --monitor \
-        --config configs/qemuhost-with-guest-${{ matrix.distro }}.toml \
-        --workflow workflows/build_${{ matrix.distro }}_qcow2_using_qemu.yaml
+  #   - name: Build
+  #     env:
+  #       DISTRO: ${{ matrix.distro }}
+  #     run: |
+  #       cd ci/cijoe
+  #       cijoe \
+  #       --monitor \
+  #       --config configs/qemuhost-with-guest-${{ matrix.distro }}.toml \
+  #       --workflow workflows/build_${{ matrix.distro }}_qcow2_using_qemu.yaml
 
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v7.0.0
-      if: always()
-      with:
-        path: ci/cijoe/cijoe-output
-        name: cijoe-${{ matrix.distro }}-cloudinit-report
+  #   - name: Upload Artifacts
+  #     uses: actions/upload-artifact@v7.0.0
+  #     if: always()
+  #     with:
+  #       path: ci/cijoe/cijoe-output
+  #       name: cijoe-${{ matrix.distro }}-cloudinit-report
 
-    - name: Change image format and compress
-      run: |
-        qemu-img convert $HOME/guests/generic-bios-kvm-x86_64/boot.img ${{ matrix.distro }}_x86_64.qcow2 -O qcow2 -c
+  #   - name: Change image format and compress
+  #     run: |
+  #       qemu-img convert $HOME/guests/generic-bios-kvm-x86_64/boot.img ${{ matrix.distro }}_x86_64.qcow2 -O qcow2 -c
 
-    - name: Store Qcow2 build artifacts
-      uses: actions/upload-artifact@v7.0.0
-      with:
-        name: vm-image-${{ matrix.distro }}_x86_64
-        compression-level: 0
-        path: ${{ matrix.distro }}_x86_64.qcow2
+  #   - name: Store Qcow2 build artifacts
+  #     uses: actions/upload-artifact@v7.0.0
+  #     with:
+  #       name: vm-image-${{ matrix.distro }}_x86_64
+  #       compression-level: 0
+  #       path: ${{ matrix.distro }}_x86_64.qcow2
 
-  cache-qcow2:
-    needs:
-    - determine-distros
-    - build-qcow2
-    runs-on: ubuntu-latest
+  # cache-qcow2:
+  #   needs:
+  #   - determine-distros
+  #   - build-qcow2
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
+  #   strategy:
+  #     matrix:
+  #       distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
 
-    steps:
-    - name: Download VM Qcow2 image artifact
-      uses: actions/download-artifact@v8.0.1
-      with:
-        name: vm-image-${{ matrix.distro }}_x86_64
+  #   steps:
+  #   - name: Download VM Qcow2 image artifact
+  #     uses: actions/download-artifact@v8.0.1
+  #     with:
+  #       name: vm-image-${{ matrix.distro }}_x86_64
 
-    - name: Delete previous cache
-      run: |
-        gh extension install actions/gh-actions-cache
-        if gh actions-cache list --repo ${{ github.repository }} | grep -q "vm-image-${{ matrix.distro }}_x86_64"; then
-          gh actions-cache delete "vm-image-${{ matrix.distro }}_x86_64" --repo ${{ github.repository }} --confirm
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Delete previous cache
+  #     run: |
+  #       gh extension install actions/gh-actions-cache
+  #       if gh actions-cache list --repo ${{ github.repository }} | grep -q "vm-image-${{ matrix.distro }}_x86_64"; then
+  #         gh actions-cache delete "vm-image-${{ matrix.distro }}_x86_64" --repo ${{ github.repository }} --confirm
+  #       fi
+  #     env:
+  #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Cache qcow2 image
-      id: cache-qcow2
-      uses: actions/cache/save@v5
-      with:
-        path: ${{ matrix.distro }}_x86_64.qcow2
-        key: vm-image-${{ matrix.distro }}_x86_64
+  #   - name: Cache qcow2 image
+  #     id: cache-qcow2
+  #     uses: actions/cache/save@v5
+  #     with:
+  #       path: ${{ matrix.distro }}_x86_64.qcow2
+  #       key: vm-image-${{ matrix.distro }}_x86_64
