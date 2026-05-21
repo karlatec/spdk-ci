@@ -18,7 +18,7 @@ services:
     - gerrit
 
   gerrit:
-    image: gerritcodereview/gerrit:3.13.5
+    image: gerritcodereview/gerrit:3.14.0
     container_name: gerrit
     restart: always
     healthcheck:
