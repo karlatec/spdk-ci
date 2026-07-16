@@ -1,0 +1,43 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "docker:enableMajor"
+  ],
+  "schedule": ["before 5am on Monday"],
+  "enabledManagers": [
+    "github-actions",
+    "dockerfile",
+    "docker-compose",
+    "custom.regex"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update docker images in container_image: properties",
+      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": [
+        "container_image:\\s*\"?(?<depName>[a-zA-Z0-9.\\-_/]+):(?<currentValue>[a-zA-Z0-9.\\-_]+)\"?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Update docker images in strategy matrices",
+      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": [
+        "-\\s+\"?(?<depName>(?:quay\\.io|docker\\.io|mcr\\.microsoft\\.com|ghcr\\.io)[a-zA-Z0-9.\\-_/]*):(?<currentValue>[a-zA-Z0-9.\\-_]+)\"?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Python dependencies installed via pip in workflows",
+      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": [
+        "pip install (?<depName>[a-zA-Z0-9.\\-_]+)==(?<currentValue>[0-9.\\-_]+)"
+      ],
+      "datasourceTemplate": "pypi"
+    }
+  ]
+}
