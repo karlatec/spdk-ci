@@ -49,143 +49,164 @@ on:
     - 'cijoe/workflows/build_*_qcow2_using_qemu.yaml'
 
 jobs:
+  dependabot-skip-notice:
+    name: Dependabot Skip Notice
+    # This condition is the exact OPPOSITE of the one used to run the workflow
+    if: ${{ github.event_name == 'push' && (contains(github.event.head_commit.message, 'dependabot[bot]') || github.event.head_commit.author.name == 'dependabot[bot]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print skip reason
+        run: |
+          # Creates a blue notice box on the workflow summary page
+          echo "::notice title=Build Skipped::The qcow2 build was skipped because this is an automated Dependabot push. XXX"
+          
+          # Adds a markdown section to the workflow summary page
+          echo "### :loudspeaker: Build Skipped :loudspeaker:" >> $GITHUB_STEP_SUMMARY
+          echo "The qcow2 build was skipped because this is an automated Dependabot push." >> $GITHUB_STEP_SUMMARY
+
   determine-distros:
+    if: ${{ github.event_name != 'push' || (!contains(github.event.head_commit.message, 'dependabot[bot]') && github.event.head_commit.author.name != 'dependabot[bot]') }}
     runs-on: ubuntu-latest
-    outputs:
-      distro: ${{ steps.set-distro.outputs.distro }}
+    # outputs:
+    #   distro: ${{ steps.set-distro.outputs.distro }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
-      with:
-        fetch-depth: 0
-    - name: Get changed files
-      id: changed-files
-      uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
-    - name: Determine distros to build
-      id: set-distro
-      env:
-        CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        GH_EVENT_NAME: ${{ github.event_name }}
-        GH_INPUTS_DISTRO: ${{ inputs.distro }}
-      run: .github/scripts/build_qcow2_determine_distros.sh
+      - name: Print event name, commit message and author name
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Commit message: ${{ github.event.head_commit.message }}"
+          echo "Author name: ${{ github.event.head_commit.author.name }}"
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v7
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Get changed files
+  #     id: changed-files
+  #     uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+  #   - name: Determine distros to build
+  #     id: set-distro
+  #     env:
+  #       CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+  #       GH_EVENT_NAME: ${{ github.event_name }}
+  #       GH_INPUTS_DISTRO: ${{ inputs.distro }}
+  #     run: .github/scripts/build_qcow2_determine_distros.sh
 
-  source-archive:
-    needs: determine-distros
-    runs-on: ubuntu-latest
+  # source-archive:
+  #   needs: determine-distros
+  #   runs-on: ubuntu-latest
 
-    concurrency:
-      group: build_qcow2_source_archive
-      cancel-in-progress: false
+  #   concurrency:
+  #     group: build_qcow2_source_archive
+  #     cancel-in-progress: false
 
-    steps:
-    - name: Checkout the spdk-ci repo locally
-      uses: actions/checkout@v7
-    - name: Checkout SPDK repository via GitHUB
-      uses: ./.github/actions/checkout_gerrit
-      with:
-        gerrit_ref: ${{ github.event.inputs.gerrit_ref }}
-        spdk_path: spdk
+  #   steps:
+  #   - name: Checkout the spdk-ci repo locally
+  #     uses: actions/checkout@v7
+  #   - name: Checkout SPDK repository via GitHUB
+  #     uses: ./.github/actions/checkout_gerrit
+  #     with:
+  #       gerrit_ref: ${{ github.event.inputs.gerrit_ref }}
+  #       spdk_path: spdk
 
-    - name: Create a tarball, of the repository, to preserve file permissions
-      run: |
-        tar -C spdk -czf ./spdk.tar.gz .
+  #   - name: Create a tarball, of the repository, to preserve file permissions
+  #     run: |
+  #       tar -C spdk -czf ./spdk.tar.gz .
 
-    - name: Upload the repository as an artifact
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: repo-spdk
-        path: spdk.tar.gz
+  #   - name: Upload the repository as an artifact
+  #     uses: actions/upload-artifact@v7.0.1
+  #     with:
+  #       name: repo-spdk
+  #       path: spdk.tar.gz
 
-  build-qcow2:
-    needs:
-    - determine-distros
-    - source-archive
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
-    container:
-      image: ghcr.io/refenv/cijoe-docker:v0.9.54
-      options: >
-        --device=/dev/kvm
-        --device=/dev/fuse
-        --cap-add=SYS_ADMIN
-        --security-opt apparmor=unconfined
+  # build-qcow2:
+  #   needs:
+  #   - determine-distros
+  #   - source-archive
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
+  #   container:
+  #     image: ghcr.io/refenv/cijoe-docker:v0.9.54
+  #     options: >
+  #       --device=/dev/kvm
+  #       --device=/dev/fuse
+  #       --cap-add=SYS_ADMIN
+  #       --security-opt apparmor=unconfined
 
-    env:
-      REPOSITORY_TARBALL_PATH: ${{ github.workspace }}/spdk.tar.gz
+  #   env:
+  #     REPOSITORY_TARBALL_PATH: ${{ github.workspace }}/spdk.tar.gz
 
-    concurrency:
-      group: ${{ format('build_{0}_qcow2', matrix.distro) }}
-      cancel-in-progress: false
+  #   concurrency:
+  #     group: ${{ format('build_{0}_qcow2', matrix.distro) }}
+  #     cancel-in-progress: false
 
-    steps:
-    - name: Download the repository
-      uses: actions/download-artifact@v8.0.1
-      with:
-        name: repo-spdk
+  #   steps:
+  #   - name: Download the repository
+  #     uses: actions/download-artifact@v8.0.1
+  #     with:
+  #       name: repo-spdk
 
-    - name: Checkout CI repository
-      uses: actions/checkout@v7
-      with:
-        path: ci
+  #   - name: Checkout CI repository
+  #     uses: actions/checkout@v7
+  #     with:
+  #       path: ci
 
-    - name: Build
-      env:
-        DISTRO: ${{ matrix.distro }}
-      run: |
-        cd ci/cijoe
-        cijoe \
-        --monitor \
-        --config configs/qemuhost-with-guest-${{ matrix.distro }}.toml \
-        --workflow workflows/build_${{ matrix.distro }}_qcow2_using_qemu.yaml
+  #   - name: Build
+  #     env:
+  #       DISTRO: ${{ matrix.distro }}
+  #     run: |
+  #       cd ci/cijoe
+  #       cijoe \
+  #       --monitor \
+  #       --config configs/qemuhost-with-guest-${{ matrix.distro }}.toml \
+  #       --workflow workflows/build_${{ matrix.distro }}_qcow2_using_qemu.yaml
 
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v7.0.1
-      if: always()
-      with:
-        path: ci/cijoe/cijoe-output
-        name: cijoe-${{ matrix.distro }}-cloudinit-report
+  #   - name: Upload Artifacts
+  #     uses: actions/upload-artifact@v7.0.1
+  #     if: always()
+  #     with:
+  #       path: ci/cijoe/cijoe-output
+  #       name: cijoe-${{ matrix.distro }}-cloudinit-report
 
-    - name: Change image format and compress
-      run: |
-        qemu-img convert $HOME/guests/generic-bios-kvm-x86_64/boot.img ${{ matrix.distro }}_x86_64.qcow2 -O qcow2 -c
+  #   - name: Change image format and compress
+  #     run: |
+  #       qemu-img convert $HOME/guests/generic-bios-kvm-x86_64/boot.img ${{ matrix.distro }}_x86_64.qcow2 -O qcow2 -c
 
-    - name: Store Qcow2 build artifacts
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: vm-image-${{ matrix.distro }}_x86_64
-        compression-level: 0
-        path: ${{ matrix.distro }}_x86_64.qcow2
+  #   - name: Store Qcow2 build artifacts
+  #     uses: actions/upload-artifact@v7.0.1
+  #     with:
+  #       name: vm-image-${{ matrix.distro }}_x86_64
+  #       compression-level: 0
+  #       path: ${{ matrix.distro }}_x86_64.qcow2
 
-  cache-qcow2:
-    needs:
-    - determine-distros
-    - build-qcow2
-    runs-on: ubuntu-latest
+  # cache-qcow2:
+  #   needs:
+  #   - determine-distros
+  #   - build-qcow2
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
+  #   strategy:
+  #     matrix:
+  #       distro: ${{ fromJson(needs.determine-distros.outputs.distro) }}
 
-    steps:
-    - name: Download VM Qcow2 image artifact
-      uses: actions/download-artifact@v8.0.1
-      with:
-        name: vm-image-${{ matrix.distro }}_x86_64
+  #   steps:
+  #   - name: Download VM Qcow2 image artifact
+  #     uses: actions/download-artifact@v8.0.1
+  #     with:
+  #       name: vm-image-${{ matrix.distro }}_x86_64
 
-    - name: Delete previous cache
-      run: |
-        gh extension install actions/gh-actions-cache
-        if gh actions-cache list --repo ${{ github.repository }} | grep -q "vm-image-${{ matrix.distro }}_x86_64"; then
-          gh actions-cache delete "vm-image-${{ matrix.distro }}_x86_64" --repo ${{ github.repository }} --confirm
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Delete previous cache
+  #     run: |
+  #       gh extension install actions/gh-actions-cache
+  #       if gh actions-cache list --repo ${{ github.repository }} | grep -q "vm-image-${{ matrix.distro }}_x86_64"; then
+  #         gh actions-cache delete "vm-image-${{ matrix.distro }}_x86_64" --repo ${{ github.repository }} --confirm
+  #       fi
+  #     env:
+  #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Cache qcow2 image
-      id: cache-qcow2
-      uses: actions/cache/save@v6
-      with:
-        path: ${{ matrix.distro }}_x86_64.qcow2
-        key: vm-image-${{ matrix.distro }}_x86_64
+  #   - name: Cache qcow2 image
+  #     id: cache-qcow2
+  #     uses: actions/cache/save@v6
+  #     with:
+  #       path: ${{ matrix.distro }}_x86_64.qcow2
+  #       key: vm-image-${{ matrix.distro }}_x86_64
