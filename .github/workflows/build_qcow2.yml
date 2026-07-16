@@ -49,7 +49,23 @@ on:
     - 'cijoe/workflows/build_*_qcow2_using_qemu.yaml'
 
 jobs:
+  dependabot-skip-notice:
+    name: Dependabot Skip Notice
+    if: ${{ github.event_name == 'push' && (contains(github.event.head_commit.message, 'dependabot[bot]') || github.event.head_commit.author.name
+      == 'dependabot[bot]') }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+    - name: Print skip reason
+      run: |
+        echo "### :loudspeaker: Build Skipped :loudspeaker:" >> $GITHUB_STEP_SUMMARY
+        echo "The qcow2 build was skipped because this is an automated Dependabot push." >> $GITHUB_STEP_SUMMARY
+        gh run cancel "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}"
+
   determine-distros:
+    if: ${{ github.event_name != 'push' || (!contains(github.event.head_commit.message, 'dependabot[bot]') && github.event.head_commit.author.name
+      != 'dependabot[bot]') }}
     runs-on: ubuntu-latest
     outputs:
       distro: ${{ steps.set-distro.outputs.distro }}
