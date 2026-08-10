@@ -21,7 +21,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-success text-white">
-            <h5 class="mb-0">Changes ready for merge</h5>
+            <h5 class="mb-0">Changes ready for merge ({{ sections["Changes ready for merge"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Changes ready for merge"] %}
@@ -60,7 +60,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Stale changes needing another +2 CR vote (14+ days old)</h5>
+            <h5 class="mb-0">Stale changes needing another +2 CR vote (14+ days old) ({{ sections["Stale changes needing another +2 CR vote"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Stale changes needing another +2 CR vote"] %}
@@ -101,7 +101,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">Changes needing another +2 CR vote</h5>
+            <h5 class="mb-0">Changes needing another +2 CR vote ({{ sections["Changes needing another +2 CR vote"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Changes needing another +2 CR vote"] %}
@@ -142,7 +142,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">Changes with -1 CR votes</h5>
+            <h5 class="mb-0">Changes with -1 CR votes ({{ sections["Changes with a -1 CR vote"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Changes with a -1 CR vote"] %}
@@ -181,7 +181,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">Changes with merge conflicts</h5>
+            <h5 class="mb-0">Changes with merge conflicts ({{ sections["Changes with a merge conflict"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Changes with a merge conflict"] %}
@@ -220,7 +220,7 @@
       <section class="mb-5">
         <div class="card shadow-sm">
           <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">Changes blocked by parent changes</h5>
+            <h5 class="mb-0">Changes blocked by parent changes ({{ sections["Changes blocked by parents in series"]|length }})</h5>
           </div>
           <div class="card-body">
             {% if sections["Changes blocked by parents in series"] %}
