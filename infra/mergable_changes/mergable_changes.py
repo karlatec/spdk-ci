@@ -17,12 +17,16 @@ class MergableChangesConfig:
     log_level: str = "INFO"
     output_dir: str = "/output"
     gerrit_url: str = "https://review.spdk.io"
+    log_file: str = "/var/log/mergable_changes.log"
+    run_once: bool = False
     gerrit_change_url: str = field(init=False)
 
     def __post_init__(self):
         self.log_level = os.getenv("LOG_LEVEL", self.log_level).upper()
         self.output_dir = os.getenv("OUTPUT_DIR", self.output_dir)
         self.gerrit_url = os.getenv("GERRIT_URL", self.gerrit_url).rstrip("/")
+        self.log_file = os.getenv("LOG_FILE", self.log_file)
+        self.run_once = os.getenv("RUN_ONCE", "").lower() in ("1", "true", "yes")
         self.gerrit_change_url = f"{self.gerrit_url}/c"
 
 config = MergableChangesConfig()
@@ -220,7 +224,7 @@ def main():
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler("/var/log/mergable_changes.log", mode="a")
+            logging.FileHandler(config.log_file, mode="a")
         ]
     )
 
@@ -232,6 +236,8 @@ def main():
             change.check_parents_ready(gerrit, all_changes)
         all_changes.sort(key=lambda c: c.age, reverse=True)
         write_text_summary(all_changes)
+        if config.run_once:
+            break
         time.sleep(300)
 
 if __name__ == '__main__':
