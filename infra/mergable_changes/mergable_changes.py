@@ -72,7 +72,7 @@ class GerritChange:
             number=change_json['_number'],
             project=change_json['project'],
             subject=change_json['subject'],
-            owner=change_json['owner']['name'],
+            owner=change_json['owner'].get('name', 'Owner not set'),
             revisions=change_json['revisions'].values(),
             blocked_by="",
             reviewed_by=reviewed_by,
