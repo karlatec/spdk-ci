@@ -17,3 +17,6 @@ scrape_configs:
     type: Bearer
     credentials_file: /run/secrets/gerrit_token
 
+- job_name: 'grafana'
+  static_configs:
+  - targets: ['grafana:3000']
