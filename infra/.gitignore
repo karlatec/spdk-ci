@@ -1,5 +1,6 @@
 .env
 .env.nginx
 .env.forwarder
+.env.grafana
 
 prometheus/gerrit_token

@@ -73,6 +73,24 @@ services:
     networks:
     - gerrit
 
+  grafana:
+    image: grafana/grafana:13.2.5
+    container_name: grafana
+    restart: always
+    ports:
+    - "127.0.0.1:3000:3000"
+    env_file: ".env.grafana"
+    environment:
+    - GF_PLUGIN_PREINSTALL=prometheus
+    volumes:
+    - grafana-data:/var/lib/grafana
+    - ./grafana/provisioning:/etc/grafana/provisioning
+    - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+    - prometheus
+    networks:
+    - gerrit
+
   forwarder:
     image: forwarder:latest
     build:
@@ -116,6 +134,7 @@ services:
 volumes:
   logs:
   outputs:
+  grafana-data:
   prometheus-data:
 
 networks:
