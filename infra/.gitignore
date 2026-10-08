@@ -1,3 +1,5 @@
 .env
 .env.nginx
 .env.forwarder
+
+prometheus/gerrit_token

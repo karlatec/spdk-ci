@@ -58,6 +58,28 @@ services:
     networks:
     - gerrit
 
+  prometheus:
+    image: prom/prometheus:v3.13.4
+    container_name: prometheus
+    restart: always
+    ports:
+    - "127.0.0.1:9090:9090"
+    volumes:
+    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - ./prometheus/gerrit_token:/run/secrets/gerrit_token:ro
+    - prometheus-data:/prometheus
+    command:
+    - "--config.file=/etc/prometheus/prometheus.yml"
+    - "--storage.tsdb.path=/prometheus"
+    - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+    - "--web.console.templates=/usr/share/prometheus/consoles"
+    - "--web.listen-address=0.0.0.0:9090"
+    - "--web.enable-lifecycle"
+    depends_on:
+    - gerrit
+    networks:
+    - gerrit
+
   forwarder:
     image: forwarder:latest
     build:
@@ -101,6 +123,7 @@ services:
 volumes:
   logs:
   outputs:
+  prometheus-data:
 
 networks:
   gerrit:
