@@ -1,0 +1,65 @@
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// Live Nginx JSON event log.
+loki.process "nginx_json" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.json {
+    expressions = {
+      timestamp      = "timestamp",
+      remote_addr    = "remote_addr",
+      method         = "method",
+      uri            = "uri",
+      status         = "status",
+      response_bytes = "response_bytes",
+      request_time   = "request_time",
+      user_agent     = "user_agent",
+    }
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+
+  // Keep extracted fields in the log body, not as indexed Loki labels.
+  stage.pack {
+    labels = [
+      "timestamp",
+      "remote_addr",
+      "method",
+      "uri",
+      "status",
+      "response_bytes",
+      "request_time",
+      "user_agent",
+    ]
+    ingest_timestamp = false
+  }
+}
+
+loki.source.file "nginx_json" {
+  targets = [
+    {
+      __path__ = "/var/log/nginx/events.json",
+      job      = "nginx",
+      source   = "live",
+    },
+  ]
+  forward_to = [loki.process.nginx_json.receiver]
+}
+
+loki.source.file "nginx_geo_json" {
+  targets = [
+    {
+      __path__ = "/var/log/nginx/geo.json",
+      job      = "nginx",
+      source   = "live",
+    },
+  ]
+  forward_to = [loki.process.nginx_json.receiver]
+}
