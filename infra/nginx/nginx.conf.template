@@ -1,10 +1,43 @@
+# Log exporter for Prometheus
 log_format nginx_log_exporter
     '$server_name\t$request_method\t$status\t$request_completion\t'
     '$request_time\t$request_length\t$bytes_sent';
 
+# Log exporter for Loki, short version, all requests, for Geo IP map.
+log_format nginx_geo_json escape=json
+    '{'
+        '"timestamp":"$time_iso8601",'
+        '"remote_addr":"$remote_addr",'
+        '"method":"$request_method",'
+        '"status":"$status",'
+        '"response_bytes":"$bytes_sent"'
+    '}';
+
+# Log exporter for Loki, full version, for offending requests.
+log_format nginx_json escape=json
+    '{'
+        '"timestamp":"$time_iso8601",'
+        '"remote_addr":"$remote_addr",'
+        '"method":"$request_method",'
+        '"uri":"$uri",'
+        '"status":"$status",'
+        '"request_time":"$request_time",'
+        '"upstream_status":"$upstream_status",'
+        '"upstream_response_time":"$upstream_response_time",'
+        '"user_agent":"$http_user_agent"'
+    '}';
+
+map "$status:$uri" $log_analysis_event {
+    default 0;
+    ~^(403|404): 1;
+    ~^[0-9][0-9][0-9]:/plugins/gitiles(/|$) 1;
+}
+
 server {
     listen 443 ssl;
     server_name review.spdk.io;
+    access_log /var/log/nginx/analysis/geo.json nginx_geo_json;
+    access_log /var/log/nginx/analysis/events.json nginx_json if=$log_analysis_event;
     access_log syslog:server=nginx-log-exporter:8514,nohostname nginx_log_exporter;
 
     if ($http_user_agent ~* (ImagesiftBot|Bytespider|GPTBot|bingbot|Petalbot|SemrushBot|DuckAssistBot) ) {

@@ -11,6 +11,7 @@ services:
       gerrit:
         condition: service_healthy
     volumes:
+    - ./.logs/nginx:/var/log/nginx/analysis
     - ./nginx/nginx.conf.template:/etc/nginx/conf.d/default.conf.template:ro
     - outputs:/var/www/outputs:ro
     - ${NGINX_CERT_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
