@@ -1,6 +1,12 @@
+log_format nginx_log_exporter
+    '$server_name\t$request_method\t$status\t$request_completion\t'
+    '$request_time\t$request_length\t$bytes_sent';
+
 server {
     listen 443 ssl;
     server_name review.spdk.io;
+    access_log syslog:server=nginx-log-exporter:8514,nohostname nginx_log_exporter;
+    access_log /var/log/nginx/access.log main;
 
     if ($http_user_agent ~* (ImagesiftBot|Bytespider|GPTBot|bingbot|Petalbot|SemrushBot|DuckAssistBot) ) {
         return 403;
