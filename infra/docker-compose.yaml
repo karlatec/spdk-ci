@@ -24,6 +24,16 @@ services:
       envsubst '$${NGINX_SSL_DOMAIN_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
       exec nginx -g 'daemon off;'
 
+  nginx-log-exporter:
+    image: ghcr.io/jkroepke/access-log-exporter:0.5.2
+    container_name: nginx-log-exporter
+    restart: always
+    command: ["--preset", "simple"]
+    depends_on:
+    - nginx
+    networks:
+    - gerrit
+
   gerrit:
     image: gerritcodereview/gerrit:3.14.5
     container_name: gerrit
@@ -77,6 +87,7 @@ services:
     - "--web.enable-lifecycle"
     depends_on:
     - gerrit
+    - nginx-log-exporter
     networks:
     - gerrit
 
