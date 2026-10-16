@@ -42,14 +42,19 @@ steps:
   with:
     guest_name: generic-bios-kvm-x86_64
 
+# xargs gets rid of the trailing whitespace
 - name: guest_growparts
   run: >-
     hostname;
     uname -a;
+    root_source=$(findmnt -n -o SOURCE -T /);
+    root_device=${root_source%%\[*};
+    disk=$(lsblk -n -o PKNAME "$root_device" | xargs);
+    partition=$(lsblk -n -o PARTN "$root_device" | xargs);
     df -h;
-    growpart /dev/vda 4 || true
-    btrfs filesystem resize max / || true;
-    df -h;
+    growpart "/dev/$disk" "$partition";
+    btrfs filesystem resize max /;
+    df -h
 
 - name: guest_update
   run: |
