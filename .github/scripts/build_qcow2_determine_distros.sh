@@ -12,6 +12,8 @@ changed_files=()
 # * .github/workflows/build_qcow2.yml - main workflow changed, build all supported distros
 # * cijoe/configs/*.toml or cijoe/workflows/*.yaml - configration changed, add affected distro
 #   to the list of distros to build.
+# * cijoe/workflows/build_<name>_qcow2_using_qemu.yaml - workflow shared by all versions of
+#   a distro changed, build every version.
 if [[ "$GH_EVENT_NAME" == "workflow_dispatch" ]]; then
 	distros_to_build+=("$GH_INPUTS_DISTRO")
 else
@@ -31,6 +33,14 @@ for file in "${changed_files[@]}"; do
 			distro=${file//@(*qemuhost-with-guest-|*build_)}
 			distro=${distro//@(.toml|_qcow2_using_qemu.yaml)}
 			distros_to_build+=("$distro")
+			;;
+		*build_+([a-zA-Z])_qcow2_using_qemu.yaml)
+			distro_name=${file##*build_}
+			distro_name=${distro_name%_qcow2_using_qemu.yaml}
+			workflows_distros=(cijoe/workflows/build_"$distro_name"_+([0-9])_qcow2_using_qemu.yaml)
+			workflows_distros=("${workflows_distros[@]#*build_}")
+			workflows_distros=("${workflows_distros[@]%_qcow2*}")
+			distros_to_build+=("${workflows_distros[@]}")
 			;;
 		*) ;;
 	esac
