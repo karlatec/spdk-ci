@@ -45,6 +45,9 @@ jobs:
         echo "GitHub run-id: ${{ github.run_id }}" >> $summary
         cat "$summary" >> $GITHUB_STEP_SUMMARY
 
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+
     - name: Post process artifacts from jobs
       id: autorun_post
       working-directory: spdk
