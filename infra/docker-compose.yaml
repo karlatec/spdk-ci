@@ -134,6 +134,7 @@ services:
     - alloy-data:/var/lib/alloy
     - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
     - ./.logs/nginx:/var/log/nginx:ro
+    - ./geoip:/etc/alloy/geoip:ro
     depends_on:
     - grafana
     networks:

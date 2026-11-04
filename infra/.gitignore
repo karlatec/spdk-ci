@@ -5,4 +5,5 @@
 
 .logs
 
+geoip
 prometheus/gerrit_token
