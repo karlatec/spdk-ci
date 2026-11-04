@@ -24,8 +24,15 @@ storage_config:
 limits_config:
   retention_period: 96h
   reject_old_samples: false
+  max_query_series: 1000
+  shard_aggregations:
+  - approx_topk
 compactor:
   working_directory: /loki/compactor
   compaction_interval: 10m
   retention_enabled: true
   delete_request_store: filesystem
+query_range:
+  shard_aggregations: approx_topk
+frontend:
+  encoding: protobuf
