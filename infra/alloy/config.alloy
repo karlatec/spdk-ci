@@ -26,6 +26,18 @@ loki.process "nginx_json" {
     format = "RFC3339"
   }
 
+  stage.geoip {
+    db      = "/etc/alloy/geoip/GeoLite2-City.mmdb"
+    source  = "remote_addr"
+    db_type = "city"
+  }
+
+  stage.geoip {
+    db      = "/etc/alloy/geoip/GeoLite2-ASN.mmdb"
+    source  = "remote_addr"
+    db_type = "asn"
+  }
+
   // Keep extracted fields in the log body, not as indexed Loki labels.
   stage.pack {
     labels = [
@@ -37,6 +49,12 @@ loki.process "nginx_json" {
       "response_bytes",
       "request_time",
       "user_agent",
+      "geoip_location_latitude",
+      "geoip_location_longitude",
+      "geoip_country_code",
+      "geoip_city_name",
+      "geoip_autonomous_system_number",
+      "geoip_autonomous_system_organization",
     ]
     ingest_timestamp = false
   }
