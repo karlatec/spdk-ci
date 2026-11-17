@@ -1,5 +1,19 @@
+map $request_method $metrics_method {
+    default  OTHER;
+    GET      GET;
+    QUERY    QUERY;
+    HEAD     HEAD;
+    POST     POST;
+    PUT      PUT;
+    DELETE   DELETE;
+    OPTIONS  OPTIONS;
+    PATCH    PATCH;
+    TRACE    TRACE;
+    CONNECT  CONNECT;
+}
+
 log_format nginx_log_exporter
-    '$server_name\t$request_method\t$status\t$request_completion\t'
+    '$server_name\t$metrics_method\t$status\t$request_completion\t'
     '$request_time\t$request_length\t$bytes_sent';
 
 server {
