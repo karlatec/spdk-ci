@@ -65,7 +65,6 @@ services:
     - CANONICAL_WEB_URL=${GERRIT_URL}
     ports:
     - "29418:29418"
-    - "8080:8080"
     networks:
     - gerrit
 
