@@ -48,6 +48,10 @@ server {
         alias /var/www/outputs/queue_status.html;
     }
 
+    location /plugins/metrics-reporter-prometheus {
+        return 403;
+    }
+
     location /gerrit {
         rewrite ^/gerrit/(.*) /$1 permanent;
         proxy_pass        http://gerrit:8080;
